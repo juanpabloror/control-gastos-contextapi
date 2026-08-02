@@ -10,13 +10,15 @@ import { useBudget } from "../hooks/useBudget";
 
 
 export default function ExpenseForm() {
-
-    const [expense, setExpense] = useState<DraftExpense>({
+    const initialExpense : DraftExpense= {
+        
         amount: 0,
         expenseName: '',
         category: '',
         date: new Date
-    })
+    }
+    
+    const [expense, setExpense] = useState<DraftExpense>(initialExpense)
     const [error, setError] = useState('')
 
     const {dispatch} = useBudget()
@@ -43,6 +45,8 @@ export default function ExpenseForm() {
         }
 
         dispatch({type: 'add-extense', payload: {expense}})
+
+        setExpense(initialExpense)
     }
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
