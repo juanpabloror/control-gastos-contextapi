@@ -3,48 +3,61 @@ import { DatePicker } from 'react-date-picker'
 import 'react-calendar/dist/Calendar.css'
 import 'react-date-picker/dist/DatePicker.css'
 import type { DraftExpense } from "../types";
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import type { Value } from "react-calendar/dist/shared/types.js";
 import ErrorMessage from "./ErrorMessage";
 import { useBudget } from "../hooks/useBudget";
 
 
 export default function ExpenseForm() {
-    const initialExpense : DraftExpense= {
-        
+    const initialExpense: DraftExpense = {
+
         amount: 0,
         expenseName: '',
         category: '',
         date: new Date
     }
-    
+
     const [expense, setExpense] = useState<DraftExpense>(initialExpense)
     const [error, setError] = useState('')
 
-    const {dispatch} = useBudget()
-    const handleChange = (e: ChangeEvent<HTMLSelectElement, HTMLSelectElement> |  ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
-       const { name, value }  = e.target   
-       const isAmountField = ['amount'].includes(name)
+    const { dispatch, state } = useBudget()
+
+    useEffect(() => {
+        if (state.editingId) {
+            const editingExpense = state.expenses.filter(currentExpense => currentExpense.id === state.editingId)[0]
+            setExpense(editingExpense)
+        }
+    }, [state.editingId])
+    const handleChange = (e: ChangeEvent<HTMLSelectElement, HTMLSelectElement> | ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
+        const { name, value } = e.target
+        const isAmountField = ['amount'].includes(name)
         setExpense({
             ...expense,
-            [name] : isAmountField ? +value : value
+            [name]: isAmountField ? +value : value
         })
 
     }
 
-    const handleChangeDate = (value : Value ) => {
+    const handleChangeDate = (value: Value) => {
         console.log(value)
-        setExpense({...expense, date: value})
+        setExpense({ ...expense, date: value })
     }
 
     const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        if(Object.values(expense).includes('')){
+        if (Object.values(expense).includes('')) {
             setError('Todos los cambios son obligatorios')
+            return
         }
 
-        dispatch({type: 'add-extense', payload: {expense}})
+        if(state.editingId){
+            dispatch({type: 'update-expense', payload: {expense: {id: state.editingId, ...expense}}})
+        }else{
+
+            dispatch({ type: 'add-extense', payload: { expense } })
+        }
 
         setExpense(initialExpense)
     }
@@ -59,13 +72,13 @@ export default function ExpenseForm() {
                     name="expenseName"
                     value={expense.expenseName}
                     onChange={handleChange}
-                    
+
                 />
             </div>
             <div className="flex flex-col gap-2">
                 <label htmlFor="amount" className="text-xl">Cantidad:</label>
                 <input type="number" className="bg-slate-100 p-2" id="amount" placeholder="Añade la Cantidad del Gasto"
-                    name="amount" value={expense.amount} onChange={handleChange}/>
+                    name="amount" value={expense.amount} onChange={handleChange} />
             </div>
             <div className="flex flex-col gap-2">
                 <label htmlFor="category" className="text-xl">Categoria:</label>
@@ -88,7 +101,7 @@ export default function ExpenseForm() {
                 />
             </div>
 
-            <input type="submit" className="bg-blue-600 cursor-pointer w-full p-2 text-white uppercase font-bold rounded-lg" value={'Registar Gasto'} />
+            <input type="submit" className="bg-blue-600 cursor-pointer w-full p-2 text-white uppercase font-bold rounded-lg" value='Registar Gasto' />
         </form>
     )
 }
