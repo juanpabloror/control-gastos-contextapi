@@ -65,11 +65,6 @@ export default function ExpenseForm() {
             <div className="flex flex-col gap-2">
                 <label htmlFor="amount" className="text-xl">Cantidad:</label>
                 <input type="number" className="bg-slate-100 p-2" id="amount" placeholder="Añade la Cantidad del Gasto"
-                    name="amount" onChange={handleChange}/>
-            </div>
-            <div className="flex flex-col gap-2">
-                <label htmlFor="amount" className="text-xl">Cantidad:</label>
-                <input type="number" className="bg-slate-100 p-2" id="amount" placeholder="Añade la Cantidad del Gasto"
                     name="amount" value={expense.amount} onChange={handleChange}/>
             </div>
             <div className="flex flex-col gap-2">
