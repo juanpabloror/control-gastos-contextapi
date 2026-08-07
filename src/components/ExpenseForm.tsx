@@ -19,14 +19,16 @@ export default function ExpenseForm() {
     }
 
     const [expense, setExpense] = useState<DraftExpense>(initialExpense)
+    const [previousAmount, setPreviousAmount] = useState(0)
     const [error, setError] = useState('')
 
-    const { dispatch, state } = useBudget()
+    const { dispatch, state, remaintBudget } = useBudget()
 
     useEffect(() => {
         if (state.editingId) {
             const editingExpense = state.expenses.filter(currentExpense => currentExpense.id === state.editingId)[0]
             setExpense(editingExpense)
+            setPreviousAmount(editingExpense.amount)
         }
     }, [state.editingId])
     const handleChange = (e: ChangeEvent<HTMLSelectElement, HTMLSelectElement> | ChangeEvent<HTMLInputElement, HTMLInputElement>) => {
@@ -35,7 +37,7 @@ export default function ExpenseForm() {
         setExpense({
             ...expense,
             [name]: isAmountField ? +value : value
-        })
+        })  
 
     }
 
@@ -52,6 +54,11 @@ export default function ExpenseForm() {
             return
         }
 
+        if ((expense.amount - previousAmount)> remaintBudget) {
+            setError('Presupuesto revasado')
+            return
+        }
+
         if(state.editingId){
             dispatch({type: 'update-expense', payload: {expense: {id: state.editingId, ...expense}}})
         }else{
@@ -60,10 +67,11 @@ export default function ExpenseForm() {
         }
 
         setExpense(initialExpense)
+        setPreviousAmount(0)
     }
     return (
         <form className="space-y-5" onSubmit={handleSubmit}>
-            <legend className="uppercase text-center text-2xl font-black border-b-4 border-blue-500 py-2">Nuevo Gasto</legend>
+            <legend className="uppercase text-center text-2xl font-black border-b-4 border-blue-500 py-2">{state.editingId ? 'Guardar Cambios' : 'Nuevo Gasto'} </legend>
 
             {error && <ErrorMessage>{error}</ErrorMessage>}
             <div className="flex flex-col gap-2">
@@ -101,7 +109,7 @@ export default function ExpenseForm() {
                 />
             </div>
 
-            <input type="submit" className="bg-blue-600 cursor-pointer w-full p-2 text-white uppercase font-bold rounded-lg" value='Registar Gasto' />
+            <input type="submit" className="bg-blue-600 cursor-pointer w-full p-2 text-white uppercase font-bold rounded-lg" value={state.editingId ? 'Guardar Cambios' : 'Registrar Gasto'} />
         </form>
     )
 }
